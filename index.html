@@ -15,6 +15,7 @@ padding:40px;
 
 h1{
 font-size:40px;
+margin-bottom:10px;
 }
 
 .search{
@@ -22,6 +23,8 @@ width:100%;
 padding:12px;
 font-size:18px;
 margin-bottom:30px;
+border-radius:6px;
+border:none;
 }
 
 .grid{
@@ -31,9 +34,12 @@ gap:20px;
 }
 
 .card{
-width:110px;
+width:120px;
 text-align:center;
 position:relative;
+padding:10px;
+background:#1b1b1b;
+border-radius:10px;
 }
 
 .card img{
@@ -44,8 +50,8 @@ border-radius:10px;
 
 .card button{
 position:absolute;
-top:-5px;
-right:-5px;
+top:5px;
+right:5px;
 background:red;
 border:none;
 color:white;
@@ -64,12 +70,20 @@ text-decoration:none;
 input{
 padding:8px;
 width:250px;
+border-radius:4px;
+border:none;
 }
 
 button{
 padding:8px 12px;
 margin-top:5px;
 cursor:pointer;
+border:none;
+border-radius:4px;
+}
+
+#linkForm{
+margin-top:15px;
 }
 
 </style>
@@ -77,7 +91,7 @@ cursor:pointer;
 
 <body>
 
-<input class="search" placeholder="Search tools...">
+<input class="search" id="searchInput" placeholder="Search tools...">
 
 <h1>Creative Toolbox</h1>
 
@@ -88,14 +102,14 @@ cursor:pointer;
 <div class="grid">
 
 <div class="card">
-<a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
+<a href="https://chat.openai.com" target="_blank">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=openai.com">
 <p>ChatGPT</p>
 </a>
 </div>
 
 <div class="card">
-<a href="https://runwayml.com" target="_blank" rel="noopener noreferrer">
+<a href="https://runwayml.com" target="_blank">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=runwayml.com">
 <p>Runway</p>
 </a>
@@ -107,7 +121,7 @@ cursor:pointer;
 
 <button onclick="toggleForm()">+ Add Link</button>
 
-<div id="linkForm" style="display:none; margin-top:15px;">
+<div id="linkForm" style="display:none;">
 
 <p>Website Name</p>
 <input id="linkName">
@@ -127,33 +141,31 @@ cursor:pointer;
 
 <script>
 
-function loadLinks(){
-
 let links = JSON.parse(localStorage.getItem("myLinks")) || []
 
+function loadLinks(){
+
+document.getElementById("myLinks").innerHTML=""
+
 links.forEach((link,index)=>{
-createCard(link.name,link.url,index)
-})
 
-}
-
-function createCard(name,url,index){
-
-let domain = new URL(url).hostname
+let domain = new URL(link.url).hostname
 
 let card = document.createElement("div")
 card.className="card"
 
 card.innerHTML = `
-<a href="${url}" target="_blank" rel="noopener noreferrer">
+<a href="${link.url}" target="_blank">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
-<p>${name}</p>
+<p>${link.name}</p>
 </a>
 
 <button onclick="deleteLink(${index})">×</button>
 `
 
 document.getElementById("myLinks").appendChild(card)
+
+})
 
 }
 
@@ -175,27 +187,45 @@ let url=document.getElementById("linkURL").value
 
 if(!name||!url) return
 
-let links=JSON.parse(localStorage.getItem("myLinks"))||[]
-
 links.push({name,url})
 
 localStorage.setItem("myLinks",JSON.stringify(links))
 
-location.reload()
+document.getElementById("linkName").value=""
+document.getElementById("linkURL").value=""
+
+loadLinks()
 
 }
 
 function deleteLink(index){
 
-let links=JSON.parse(localStorage.getItem("myLinks"))||[]
-
 links.splice(index,1)
 
 localStorage.setItem("myLinks",JSON.stringify(links))
 
-location.reload()
+loadLinks()
 
 }
+
+document.getElementById("searchInput").addEventListener("input",function(){
+
+let search=this.value.toLowerCase()
+
+let cards=document.querySelectorAll(".card")
+
+cards.forEach(card=>{
+
+let text=card.innerText.toLowerCase()
+
+if(text.includes(search))
+card.style.display="block"
+else
+card.style.display="none"
+
+})
+
+})
 
 loadLinks()
 
