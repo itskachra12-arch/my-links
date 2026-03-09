@@ -80,6 +80,53 @@ text-decoration:none;
 
 <div class="grid" id="myLinks"></div>
 </div>
+<script>
 
+function loadLinks(){
+
+let links = JSON.parse(localStorage.getItem("myLinks")) || []
+
+links.forEach(link => createCard(link.name, link.url))
+
+}
+
+function createCard(name, url){
+
+let domain = new URL(url).hostname
+
+let card = document.createElement("div")
+card.className = "card"
+
+card.innerHTML = `
+<a href="${url}" target="_blank" rel="noopener noreferrer">
+<img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
+<p>${name}</p>
+</a>
+`
+
+document.getElementById("myLinks").appendChild(card)
+
+}
+
+function addMyLink(){
+
+let name = prompt("Website name")
+let url = prompt("Website link")
+
+if(!name || !url) return
+
+let links = JSON.parse(localStorage.getItem("myLinks")) || []
+
+links.push({name, url})
+
+localStorage.setItem("myLinks", JSON.stringify(links))
+
+createCard(name, url)
+
+}
+
+loadLinks()
+
+</script>
 </body>
 </html>
