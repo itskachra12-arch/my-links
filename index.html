@@ -75,10 +75,20 @@ text-decoration:none;
 </a>
 </div>
 <h2>My Toolbox</h2>
+<button onclick="toggleForm()">+ Add Link</button>
 
-<button onclick="addMyLink()">+ Add Link</button>
+<div id="linkForm" style="display:none; margin-top:10px;">
+
+<input id="linkName" placeholder="Website Name"><br><br>
+
+<input id="linkURL" placeholder="Website Link"><br><br>
+
+<button onclick="submitLink()">Add</button>
+
+</div>
 
 <div class="grid" id="myLinks"></div>
+
 </div>
 <script>
 
@@ -108,7 +118,34 @@ document.getElementById("myLinks").appendChild(card)
 
 }
 
-function addMyLink(){
+function toggleForm(){
+let form = document.getElementById("linkForm")
+
+if(form.style.display === "none")
+form.style.display = "block"
+else
+form.style.display = "none"
+}
+
+function submitLink(){
+
+let name = document.getElementById("linkName").value
+let url = document.getElementById("linkURL").value
+
+if(!name || !url) return
+
+let links = JSON.parse(localStorage.getItem("myLinks")) || []
+
+links.push({name, url})
+
+localStorage.setItem("myLinks", JSON.stringify(links))
+
+createCard(name, url)
+
+document.getElementById("linkName").value = ""
+document.getElementById("linkURL").value = ""
+
+}
 
 let name = prompt("Website name")
 let url = prompt("Website link")
