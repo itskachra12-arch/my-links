@@ -31,14 +31,29 @@ gap:20px;
 }
 
 .card{
-width:100px;
+width:110px;
 text-align:center;
+position:relative;
 }
 
 .card img{
 width:60px;
 height:60px;
 border-radius:10px;
+}
+
+.card button{
+position:absolute;
+top:-5px;
+right:-5px;
+background:red;
+border:none;
+color:white;
+cursor:pointer;
+border-radius:50%;
+width:20px;
+height:20px;
+font-size:12px;
 }
 
 a{
@@ -116,22 +131,26 @@ function loadLinks(){
 
 let links = JSON.parse(localStorage.getItem("myLinks")) || []
 
-links.forEach(link => createCard(link.name, link.url))
+links.forEach((link,index)=>{
+createCard(link.name,link.url,index)
+})
 
 }
 
-function createCard(name, url){
+function createCard(name,url,index){
 
 let domain = new URL(url).hostname
 
 let card = document.createElement("div")
 card.className="card"
 
-card.innerHTML=`
+card.innerHTML = `
 <a href="${url}" target="_blank" rel="noopener noreferrer">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
 <p>${name}</p>
 </a>
+
+<button onclick="deleteLink(${index})">×</button>
 `
 
 document.getElementById("myLinks").appendChild(card)
@@ -140,32 +159,41 @@ document.getElementById("myLinks").appendChild(card)
 
 function toggleForm(){
 
-let form = document.getElementById("linkForm")
+let form=document.getElementById("linkForm")
 
-if(form.style.display === "none")
-form.style.display = "block"
+if(form.style.display==="none")
+form.style.display="block"
 else
-form.style.display = "none"
+form.style.display="none"
 
 }
 
 function submitLink(){
 
-let name = document.getElementById("linkName").value
-let url = document.getElementById("linkURL").value
+let name=document.getElementById("linkName").value
+let url=document.getElementById("linkURL").value
 
-if(!name || !url) return
+if(!name||!url) return
 
-let links = JSON.parse(localStorage.getItem("myLinks")) || []
+let links=JSON.parse(localStorage.getItem("myLinks"))||[]
 
-links.push({name, url})
+links.push({name,url})
 
-localStorage.setItem("myLinks", JSON.stringify(links))
+localStorage.setItem("myLinks",JSON.stringify(links))
 
-createCard(name, url)
+location.reload()
 
-document.getElementById("linkName").value=""
-document.getElementById("linkURL").value=""
+}
+
+function deleteLink(index){
+
+let links=JSON.parse(localStorage.getItem("myLinks"))||[]
+
+links.splice(index,1)
+
+localStorage.setItem("myLinks",JSON.stringify(links))
+
+location.reload()
 
 }
 
