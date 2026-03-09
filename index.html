@@ -2,310 +2,513 @@
 <html>
 <head>
 <title>Creative Toolbox</title>
+
 <style>
+
 body{
-  background:#111;
-  color:white;
-  font-family:Arial;
-  padding:40px;
+background:#0a0a0a;
+color:#e6e6e6;
+font-family:Arial,Helvetica,sans-serif;
+padding:40px;
 }
 
-h1{ font-size:38px; margin-bottom:10px; }
-h2{ margin-top:40px; }
+h1{
+font-size:34px;
+margin-bottom:20px;
+}
+
+h2{
+margin-top:40px;
+}
 
 input,select,button{
-  padding:8px;
-  border-radius:4px;
-  border:none;
-  margin-bottom:8px;
+background:#1a1a1a;
+color:white;
+border:none;
+padding:8px;
+border-radius:5px;
+margin-bottom:10px;
 }
 
-button{ cursor:pointer; }
+button{
+cursor:pointer;
+}
 
-.search{ width:100%; padding:12px; font-size:16px; margin-bottom:25px; border:none; border-radius:6px; }
+.search{
+width:100%;
+padding:12px;
+font-size:16px;
+margin-bottom:25px;
+}
 
 .grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:20px;
+display:flex;
+flex-wrap:wrap;
+gap:20px;
 }
 
 .card{
-  width:160px;
-  background:#1c1c1c;
-  border-radius:10px;
-  padding:12px;
-  text-align:center;
-  position:relative;
+width:160px;
+background:#161616;
+border-radius:10px;
+padding:12px;
+text-align:center;
+position:relative;
 }
 
 .card img{
-  width:48px;
-  height:48px;
-  border-radius:8px;
-  margin-bottom:8px;
+width:48px;
+height:48px;
+margin-bottom:8px;
 }
 
 .delete{
-  position:absolute;
-  top:6px;
-  right:6px;
-  background:red;
-  border:none;
-  color:white;
-  border-radius:50%;
-  width:20px;
-  height:20px;
-  cursor:pointer;
+position:absolute;
+top:6px;
+right:6px;
+background:#ff3b3b;
+border:none;
+border-radius:50%;
+width:20px;
+height:20px;
+color:white;
+font-size:12px;
 }
 
 .favorite{
-  position:absolute;
-  top:6px;
-  left:6px;
-  font-size:14px;
+position:absolute;
+top:6px;
+left:6px;
 }
 
-a{ text-decoration:none; color:white; }
+.section{
+margin-top:35px;
+}
 
-.section{ margin-top:35px; padding-bottom:20px; border-bottom:1px solid #333; cursor: grab; }
+.categoryHeader{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.info{
+cursor:pointer;
+color:#aaa;
+}
+
+.adminControls{
+margin-bottom:20px;
+}
+
+.hidden{
+display:none;
+}
+
+a{
+text-decoration:none;
+color:white;
+}
+
 </style>
 </head>
+
 <body>
 
 <h1>Creative Toolbox</h1>
 
-<input class="search" id="searchInput" placeholder="Search tools...">
+<input id="searchInput" class="search" placeholder="Search tools...">
 
-<!-- Add Category -->
-<p>Create Category:</p>
-<input id="newCategory">
-<button onclick="addCategory()">Add Category</button>
-
-<!-- Add Tool -->
-<button onclick="toggleForm()">+ Add Tool</button>
+<div class="adminControls">
+<button onclick="toggleAdmin()">Admin Mode</button>
 <button onclick="exportTools()">Export</button>
 <input type="file" onchange="importTools(event)">
+</div>
 
-<div id="formBox" style="display:none; margin-top:15px;">
-<p>Name</p>
-<input id="toolName">
+<!-- PUBLIC FAVORITES -->
 
-<p>Category</p>
+<div class="section">
+<h2>⭐ Public Favorites</h2>
+<div class="grid" id="publicFavorites"></div>
+</div>
+
+<!-- PUBLIC CATEGORIES -->
+
+<div id="publicCategoriesContainer"></div>
+
+<div id="publicCategoryCreator" class="hidden">
+
+<h3>Create Public Category</h3>
+
+<input id="publicCatName" placeholder="Category Name">
+<input id="publicCatDesc" placeholder="Category Description">
+
+<button onclick="addPublicCategory()">Create</button>
+
+</div>
+
+<!-- PRIVATE FAVORITES -->
+
+<div class="section">
+<h2>⭐ Private Favorites</h2>
+<div class="grid" id="privateFavorites"></div>
+</div>
+
+<!-- PRIVATE CATEGORIES -->
+
+<div id="privateCategoriesContainer"></div>
+
+<div id="privateCategoryCreator">
+
+<h3>Create Private Category</h3>
+
+<input id="privateCatName" placeholder="Category Name">
+
+<button onclick="addPrivateCategory()">Create</button>
+
+</div>
+
+<!-- TOOL FORM -->
+
+<div id="toolForm" class="hidden">
+
+<h3>Add Tool</h3>
+
+<input id="toolName" placeholder="Tool Name">
+
+<input id="toolLink" placeholder="Tool Link">
+
 <select id="toolCategory"></select>
 
-<p>
-<label><input type="checkbox" id="toolFav"> Favorite</label>
-</p>
+<label>
+<input type="checkbox" id="toolFav">
+Favorite
+</label>
 
-<button onclick="addTool()">Add</button>
+<select id="toolType">
+<option value="public">Public</option>
+<option value="private">Private</option>
+</select>
+
+<br>
+
+<button onclick="addTool()">Add Tool</button>
+
 </div>
-
-<!-- Favorites Section -->
-<div class="section">
-<h2>⭐ Favorites</h2>
-<div class="grid" id="favorites"></div>
-</div>
-
-<!-- Categories will be appended here dynamically -->
-<div id="categoriesContainer"></div>
 
 <script>
-let categories = [];
-let tools = JSON.parse(localStorage.getItem("tools")) || [];
 
-// Toggle Add Tool form
-function toggleForm(){
-  let f = document.getElementById("formBox");
-  f.style.display = f.style.display==="none" ? "block" : "none";
+const ADMIN_PASSWORD="admin123"
+
+let admin=false
+
+let publicCategories=JSON.parse(localStorage.getItem("publicCategories"))||[]
+let privateCategories=JSON.parse(localStorage.getItem("privateCategories"))||[]
+
+let publicTools=JSON.parse(localStorage.getItem("publicTools"))||[]
+let privateTools=JSON.parse(localStorage.getItem("privateTools"))||[]
+
+function toggleAdmin(){
+
+let pass=prompt("Enter admin password")
+
+if(pass===ADMIN_PASSWORD){
+
+admin=!admin
+
+document.getElementById("toolForm").classList.toggle("hidden")
+
+document.getElementById("publicCategoryCreator").classList.toggle("hidden")
+
+alert("Admin mode "+(admin?"enabled":"disabled"))
+
+render()
+
 }
 
-// Add new category
-function addCategory(){
-  let cat = document.getElementById("newCategory").value.trim();
-  if(!cat || categories.includes(cat)) return;
-  categories.push(cat);
-
-  // Add to dropdown
-  let sel = document.getElementById("toolCategory");
-  let opt = document.createElement("option");
-  opt.value = cat; opt.textContent = cat;
-  sel.appendChild(opt);
-
-  // Create a section
-  let container = document.getElementById("categoriesContainer");
-  let section = document.createElement("div");
-  section.className = "section";
-  section.id = "section-" + cat;
-  section.innerHTML = `
-    <h2>${cat} <button onclick="deleteCategory('${cat}')">🗑️ Delete Category</button></h2>
-    <div class="grid" id="${cat}"></div>
-  `;
-  container.appendChild(section);
-
-  document.getElementById("newCategory").value = "";
-  enableDrag(); // enable drag after adding new section
 }
 
-// Delete category with confirmation
-function deleteCategory(cat){
-  if(!confirm(`Are you sure you want to delete category "${cat}" and all its tools?`)) return;
+function save(){
 
-  // Remove tools in that category
-  tools = tools.filter(t=>t.cat!==cat);
-  localStorage.setItem("tools", JSON.stringify(tools));
+localStorage.setItem("publicCategories",JSON.stringify(publicCategories))
+localStorage.setItem("privateCategories",JSON.stringify(privateCategories))
+localStorage.setItem("publicTools",JSON.stringify(publicTools))
+localStorage.setItem("privateTools",JSON.stringify(privateTools))
 
-  // Remove section from DOM
-  let section = document.getElementById("section-"+cat);
-  section.remove();
-
-  // Remove from dropdown and categories array
-  categories = categories.filter(c=>c!==cat);
-  let sel = document.getElementById("toolCategory");
-  for(let i=0;i<sel.options.length;i++){
-    if(sel.options[i].value===cat){ sel.remove(i); break; }
-  }
-
-  render();
 }
 
-// Add Tool
+function addPublicCategory(){
+
+let name=document.getElementById("publicCatName").value.trim()
+let desc=document.getElementById("publicCatDesc").value.trim()
+
+if(!name)return
+
+publicCategories.push({name,desc})
+
+save()
+render()
+
+}
+
+function addPrivateCategory(){
+
+let name=document.getElementById("privateCatName").value.trim()
+
+if(!name)return
+
+privateCategories.push({name})
+
+save()
+render()
+
+}
+
+function deleteCategory(type,index){
+
+if(!confirm("Delete this category and all tools inside?"))return
+
+if(type==="public"){
+
+let name=publicCategories[index].name
+
+publicTools=publicTools.filter(t=>t.cat!==name)
+
+publicCategories.splice(index,1)
+
+}else{
+
+let name=privateCategories[index].name
+
+privateTools=privateTools.filter(t=>t.cat!==name)
+
+privateCategories.splice(index,1)
+
+}
+
+save()
+render()
+
+}
+
 function addTool(){
-  let name=document.getElementById("toolName").value.trim();
-  let url=document.getElementById("toolURL")?.value?.trim() || '';
-  let cat=document.getElementById("toolCategory").value;
-  let fav=document.getElementById("toolFav").checked;
-  if(!name || !cat) return;
 
-  if(url && !url.startsWith("http")) url="https://"+url;
+let name=document.getElementById("toolName").value.trim()
+let link=document.getElementById("toolLink").value.trim()
+let cat=document.getElementById("toolCategory").value
+let fav=document.getElementById("toolFav").checked
+let type=document.getElementById("toolType").value
 
-  tools.push({name, url, cat, fav});
-  localStorage.setItem("tools", JSON.stringify(tools));
-  clearForm();
-  render();
+if(!name||!link)return
+
+if(!link.startsWith("http"))link="https://"+link
+
+let tool={name,link,cat,fav}
+
+if(type==="public")publicTools.push(tool)
+else privateTools.push(tool)
+
+save()
+render()
+
 }
 
-// Clear add tool form
-function clearForm(){
-  document.getElementById("toolName").value="";
-  if(document.getElementById("toolURL")) document.getElementById("toolURL").value="";
-  document.getElementById("toolFav").checked=false;
+function deleteTool(type,index){
+
+if(type==="public")publicTools.splice(index,1)
+else privateTools.splice(index,1)
+
+save()
+render()
+
 }
 
-// Delete a tool
-function deleteTool(i){
-  tools.splice(i,1);
-  localStorage.setItem("tools",JSON.stringify(tools));
-  render();
-}
-
-// Render all tools
 function render(){
-  document.querySelectorAll(".grid").forEach(g=>g.innerHTML="");
-  let favSection = document.getElementById("favorites");
-  favSection.innerHTML="";
 
-  tools.forEach((t,i)=>{
-    let domain;
-    try{ domain=new URL(t.url).hostname; } catch{ domain=t.url; }
+document.getElementById("publicCategoriesContainer").innerHTML=""
+document.getElementById("privateCategoriesContainer").innerHTML=""
+document.getElementById("publicFavorites").innerHTML=""
+document.getElementById("privateFavorites").innerHTML=""
 
-    let card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <div class="favorite">${t.fav?"⭐":""}</div>
-      <button class="delete" onclick="deleteTool(${i})">×</button>
-      <a href="${t.url}" target="_blank">
-        <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
-        <div>${t.name}</div>
-      </a>
-    `;
+let select=document.getElementById("toolCategory")
+select.innerHTML=""
 
-    // Append in category
-    let container = document.getElementById(t.cat);
-    if(!container) return;
-    if(t.fav){
-      container.prepend(card.cloneNode(true));
-      favSection.appendChild(card.cloneNode(true));
-    } else {
-      container.appendChild(card);
-    }
-  });
+publicCategories.forEach((c,i)=>{
+
+let section=document.createElement("div")
+section.className="section"
+
+section.innerHTML=`
+<div class="categoryHeader">
+<h2>${c.name}</h2>
+<span class="info" onclick="alert('${c.desc}')">ⓘ</span>
+${admin?`<button onclick="deleteCategory('public',${i})">Delete</button>`:""}
+</div>
+<div class="grid" id="pub-${i}"></div>
+`
+
+document.getElementById("publicCategoriesContainer").appendChild(section)
+
+let opt=document.createElement("option")
+opt.value=c.name
+opt.textContent="[Public] "+c.name
+select.appendChild(opt)
+
+})
+
+privateCategories.forEach((c,i)=>{
+
+let section=document.createElement("div")
+section.className="section"
+
+section.innerHTML=`
+<div class="categoryHeader">
+<h2>${c.name}</h2>
+${admin?`<button onclick="deleteCategory('private',${i})">Delete</button>`:""}
+</div>
+<div class="grid" id="pri-${i}"></div>
+`
+
+document.getElementById("privateCategoriesContainer").appendChild(section)
+
+let opt=document.createElement("option")
+opt.value=c.name
+opt.textContent="[Private] "+c.name
+select.appendChild(opt)
+
+})
+
+publicTools.forEach((t,i)=>{
+
+let domain=new URL(t.link).hostname
+
+let card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+<div class="favorite">${t.fav?"⭐":""}</div>
+${admin?`<button class="delete" onclick="deleteTool('public',${i})">×</button>`:""}
+<a href="${t.link}" target="_blank">
+<img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
+<div>${t.name}</div>
+</a>
+`
+
+let catIndex=publicCategories.findIndex(c=>c.name===t.cat)
+
+if(catIndex>-1){
+
+if(t.fav){
+
+document.getElementById("publicFavorites").appendChild(card.cloneNode(true))
+document.getElementById("pub-"+catIndex).prepend(card)
+
+}else{
+
+document.getElementById("pub-"+catIndex).appendChild(card)
+
 }
 
-// Search tools
-document.getElementById("searchInput").addEventListener("input", function(){
-  let s = this.value.toLowerCase();
-  document.querySelectorAll(".card").forEach(card=>{
-    let text = card.innerText.toLowerCase();
-    card.style.display = text.includes(s) ? "block" : "none";
-  });
-});
+}
 
-// Export tools
+})
+
+privateTools.forEach((t,i)=>{
+
+let domain=new URL(t.link).hostname
+
+let card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+<div class="favorite">${t.fav?"⭐":""}</div>
+${admin?`<button class="delete" onclick="deleteTool('private',${i})">×</button>`:""}
+<a href="${t.link}" target="_blank">
+<img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
+<div>${t.name}</div>
+</a>
+`
+
+let catIndex=privateCategories.findIndex(c=>c.name===t.cat)
+
+if(catIndex>-1){
+
+if(t.fav){
+
+document.getElementById("privateFavorites").appendChild(card.cloneNode(true))
+document.getElementById("pri-"+catIndex).prepend(card)
+
+}else{
+
+document.getElementById("pri-"+catIndex).appendChild(card)
+
+}
+
+}
+
+})
+
+}
+
+document.getElementById("searchInput").addEventListener("input",function(){
+
+let s=this.value.toLowerCase()
+
+document.querySelectorAll(".card").forEach(card=>{
+
+card.style.display=card.innerText.toLowerCase().includes(s)?"block":"none"
+
+})
+
+})
+
 function exportTools(){
-  let data=JSON.stringify({tools,categories});
-  let blob=new Blob([data],{type:"application/json"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="toolbox.json";
-  a.click();
+
+let data={
+publicCategories,
+privateCategories,
+publicTools,
+privateTools
 }
 
-// Import tools
+let blob=new Blob([JSON.stringify(data)],{type:"application/json"})
+
+let a=document.createElement("a")
+
+a.href=URL.createObjectURL(blob)
+
+a.download="toolbox.json"
+
+a.click()
+
+}
+
 function importTools(e){
-  let file=e.target.files[0];
-  let reader=new FileReader();
-  reader.onload=function(){
-    let data = JSON.parse(reader.result);
-    tools = data.tools || [];
-    categories = data.categories || [];
 
-    // Clear existing category dropdown and sections
-    document.getElementById("toolCategory").innerHTML="";
-    document.getElementById("categoriesContainer").innerHTML="";
-    categories.forEach(cat=>{
-      let sel = document.getElementById("toolCategory");
-      let opt = document.createElement("option");
-      opt.value=cat; opt.textContent=cat;
-      sel.appendChild(opt);
+let file=e.target.files[0]
 
-      let section = document.createElement("div");
-      section.className="section";
-      section.id = "section-" + cat;
-      section.innerHTML = `<h2>${cat} <button onclick="deleteCategory('${cat}')">🗑️ Delete Category</button></h2><div class="grid" id="${cat}"></div>`;
-      document.getElementById("categoriesContainer").appendChild(section);
-    });
+let reader=new FileReader()
 
-    localStorage.setItem("tools", JSON.stringify(tools));
-    render();
-    enableDrag();
-  }
-  reader.readAsText(file);
+reader.onload=function(){
+
+let data=JSON.parse(reader.result)
+
+publicCategories=data.publicCategories||[]
+privateCategories=data.privateCategories||[]
+publicTools=data.publicTools||[]
+privateTools=data.privateTools||[]
+
+save()
+render()
+
 }
 
-// Drag-and-drop reorder (categories)
-function enableDrag(){
-  const sections = document.querySelectorAll('#categoriesContainer .section');
-  sections.forEach(section => {
-    section.draggable = true;
-    section.ondragstart = e => { e.dataTransfer.setData("text/plain", section.id); };
-  });
+reader.readAsText(file)
 
-  const container = document.getElementById('categoriesContainer');
-  container.ondragover = e => e.preventDefault();
-  container.ondrop = e => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const dragged = document.getElementById(id);
-    const after = Array.from(container.children).find(c=> c!==dragged && c.getBoundingClientRect().top>e.clientY);
-    container.insertBefore(dragged, after || null);
-  };
 }
 
-// Initialize
-render();
-enableDrag();
+render()
 
 </script>
+
 </body>
 </html>
