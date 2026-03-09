@@ -440,6 +440,33 @@ reader.readAsText(file)
 render()
 
 </script>
+<script>
+const searchBar = document.getElementById("search");
 
+searchBar.addEventListener("input", function () {
+
+let text = this.value.toLowerCase();
+let tools = document.querySelectorAll(".tool-card");
+
+tools.forEach(tool => {
+
+let name = tool.dataset.name.toLowerCase();
+let category = tool.dataset.category.toLowerCase();
+let desc = tool.dataset.description.toLowerCase();
+
+if (
+name.includes(text) ||
+category.includes(text) ||
+desc.includes(text)
+) {
+tool.style.display = "block";
+} else {
+tool.style.display = "none";
+}
+
+});
+
+});
+</script>
 </body>
 </html>
