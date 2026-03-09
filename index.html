@@ -46,6 +46,17 @@ color:white;
 text-decoration:none;
 }
 
+input{
+padding:8px;
+width:250px;
+}
+
+button{
+padding:8px 12px;
+margin-top:5px;
+cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -57,7 +68,7 @@ text-decoration:none;
 
 <p>My video editing and design resources.</p>
 
-<h2>AI Tools</h2>
+<h2>Public Toolbox</h2>
 
 <div class="grid">
 
@@ -69,27 +80,36 @@ text-decoration:none;
 </div>
 
 <div class="card">
-<a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
+<a href="https://runwayml.com" target="_blank" rel="noopener noreferrer">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=runwayml.com">
 <p>Runway</p>
 </a>
 </div>
+
+</div>
+
 <h2>My Toolbox</h2>
+
 <button onclick="toggleForm()">+ Add Link</button>
 
-<div id="linkForm" style="display:none; margin-top:10px;">
+<div id="linkForm" style="display:none; margin-top:15px;">
 
-<input id="linkName" placeholder="Website Name"><br><br>
+<p>Website Name</p>
+<input id="linkName">
 
-<input id="linkURL" placeholder="Website Link"><br><br>
+<p>Website Link</p>
+<input id="linkURL">
+
+<br><br>
 
 <button onclick="submitLink()">Add</button>
 
 </div>
 
+<br>
+
 <div class="grid" id="myLinks"></div>
 
-</div>
 <script>
 
 function loadLinks(){
@@ -105,9 +125,9 @@ function createCard(name, url){
 let domain = new URL(url).hostname
 
 let card = document.createElement("div")
-card.className = "card"
+card.className="card"
 
-card.innerHTML = `
+card.innerHTML=`
 <a href="${url}" target="_blank" rel="noopener noreferrer">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
 <p>${name}</p>
@@ -119,12 +139,14 @@ document.getElementById("myLinks").appendChild(card)
 }
 
 function toggleForm(){
+
 let form = document.getElementById("linkForm")
 
 if(form.style.display === "none")
 form.style.display = "block"
 else
 form.style.display = "none"
+
 }
 
 function submitLink(){
@@ -142,28 +164,14 @@ localStorage.setItem("myLinks", JSON.stringify(links))
 
 createCard(name, url)
 
-document.getElementById("linkName").value = ""
-document.getElementById("linkURL").value = ""
-
-}
-
-let name = prompt("Website name")
-let url = prompt("Website link")
-
-if(!name || !url) return
-
-let links = JSON.parse(localStorage.getItem("myLinks")) || []
-
-links.push({name, url})
-
-localStorage.setItem("myLinks", JSON.stringify(links))
-
-createCard(name, url)
+document.getElementById("linkName").value=""
+document.getElementById("linkURL").value=""
 
 }
 
 loadLinks()
 
 </script>
+
 </body>
 </html>
