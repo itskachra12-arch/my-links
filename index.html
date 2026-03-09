@@ -149,7 +149,13 @@ document.getElementById("myLinks").innerHTML=""
 
 links.forEach((link,index)=>{
 
-let domain = new URL(link.url).hostname
+let domain
+
+try{
+domain = new URL(link.url).hostname
+}catch{
+domain = link.url
+}
 
 let card = document.createElement("div")
 card.className="card"
@@ -199,8 +205,6 @@ document.getElementById("linkName").value=""
 document.getElementById("linkURL").value=""
 
 loadLinks()
-
-}
 
 }
 
