@@ -6,108 +6,110 @@
 <style>
 
 body{
-background:#0a0a0a;
-color:#e6e6e6;
-font-family:Arial,Helvetica,sans-serif;
+background:#0b0b0b;
+color:#e8e8e8;
+font-family:Arial;
 padding:40px;
 }
 
-h1{
-font-size:34px;
-margin-bottom:20px;
+h1{font-size:34px;margin-bottom:20px}
+h2{margin-top:40px}
+
+.search{
+width:100%;
+padding:12px;
+margin-bottom:30px;
+background:#1a1a1a;
+border:none;
+color:white;
+border-radius:6px;
 }
 
-h2{
-margin-top:40px;
-}
-
-input,select,button{
+button,input,select{
 background:#1a1a1a;
 color:white;
 border:none;
 padding:8px;
 border-radius:5px;
-margin-bottom:10px;
-}
-
-button{
-cursor:pointer;
-}
-
-.search{
-width:100%;
-padding:12px;
-font-size:16px;
-margin-bottom:25px;
+margin:5px 0;
 }
 
 .grid{
 display:flex;
 flex-wrap:wrap;
-gap:20px;
+gap:18px;
 }
 
 .card{
 width:160px;
 background:#161616;
-border-radius:10px;
 padding:12px;
+border-radius:10px;
 text-align:center;
 position:relative;
 }
 
 .card img{
-width:48px;
-height:48px;
+width:46px;
+height:46px;
 margin-bottom:8px;
-}
-
-.delete{
-position:absolute;
-top:6px;
-right:6px;
-background:#ff3b3b;
-border:none;
-border-radius:50%;
-width:20px;
-height:20px;
-color:white;
-font-size:12px;
 }
 
 .favorite{
 position:absolute;
-top:6px;
 left:6px;
+top:6px;
 }
 
-.section{
-margin-top:35px;
+.delete{
+position:absolute;
+right:6px;
+top:6px;
+background:#ff3d3d;
+border-radius:50%;
+width:20px;
+height:20px;
+font-size:12px;
+color:white;
 }
+
+.section{margin-top:35px}
 
 .categoryHeader{
 display:flex;
 align-items:center;
-gap:10px;
+gap:8px;
 }
 
 .info{
 cursor:pointer;
+font-size:14px;
 color:#aaa;
+position:relative;
 }
 
-.adminControls{
-margin-bottom:20px;
-}
-
-.hidden{
+.tooltip{
 display:none;
+position:absolute;
+background:#222;
+padding:8px;
+border-radius:6px;
+width:180px;
+top:20px;
+left:0;
+font-size:12px;
+}
+
+.info:hover .tooltip{
+display:block;
 }
 
 a{
-text-decoration:none;
 color:white;
+text-decoration:none;
 }
+
+.adminOnly{display:none}
 
 </style>
 </head>
@@ -116,264 +118,215 @@ color:white;
 
 <h1>Creative Toolbox</h1>
 
-<input id="searchInput" class="search" placeholder="Search tools...">
+<input id="search" class="search" placeholder="Search tools...">
 
-<div class="adminControls">
-<button onclick="toggleAdmin()">Admin Mode</button>
-<button onclick="exportTools()">Export</button>
-<input type="file" onchange="importTools(event)">
-</div>
-
-<!-- PUBLIC FAVORITES -->
+<button onclick="adminLogin()">Admin Mode</button>
+<button onclick="exportData()">Export</button>
+<input type="file" onchange="importData(event)">
 
 <div class="section">
 <h2>⭐ Public Favorites</h2>
-<div class="grid" id="publicFavorites"></div>
+<div class="grid" id="publicFav"></div>
 </div>
 
-<!-- PUBLIC CATEGORIES -->
+<div id="publicCats"></div>
 
-<div id="publicCategoriesContainer"></div>
-
-<div id="publicCategoryCreator" class="hidden">
+<div class="adminOnly">
 
 <h3>Create Public Category</h3>
 
-<input id="publicCatName" placeholder="Category Name">
-<input id="publicCatDesc" placeholder="Category Description">
-
+<input id="pubCatName" placeholder="Category name">
+<input id="pubCatDesc" placeholder="Category description">
 <button onclick="addPublicCategory()">Create</button>
 
-</div>
+<h3>Add Public Tool</h3>
 
-<!-- PRIVATE FAVORITES -->
+<input id="pubToolName" placeholder="Tool name">
+<input id="pubToolLink" placeholder="Tool link">
 
-<div class="section">
-<h2>⭐ Private Favorites</h2>
-<div class="grid" id="privateFavorites"></div>
-</div>
-
-<!-- PRIVATE CATEGORIES -->
-
-<div id="privateCategoriesContainer"></div>
-
-<div id="privateCategoryCreator">
-
-<h3>Create Private Category</h3>
-
-<input id="privateCatName" placeholder="Category Name">
-
-<button onclick="addPrivateCategory()">Create</button>
-
-</div>
-
-<!-- TOOL FORM -->
-
-<div id="toolForm" class="hidden">
-
-<h3>Add Tool</h3>
-
-<input id="toolName" placeholder="Tool Name">
-
-<input id="toolLink" placeholder="Tool Link">
-
-<select id="toolCategory"></select>
+<select id="pubToolCat"></select>
 
 <label>
-<input type="checkbox" id="toolFav">
+<input type="checkbox" id="pubToolFav">
 Favorite
 </label>
 
-<select id="toolType">
-<option value="public">Public</option>
-<option value="private">Private</option>
-</select>
-
 <br>
-
-<button onclick="addTool()">Add Tool</button>
+<button onclick="addPublicTool()">Add Tool</button>
 
 </div>
 
+<div class="section">
+<h2>⭐ Private Favorites</h2>
+<div class="grid" id="privateFav"></div>
+</div>
+
+<div id="privateCats"></div>
+
+<h3>Create Private Category</h3>
+
+<input id="privCatName" placeholder="Category name">
+<button onclick="addPrivateCategory()">Create</button>
+
+<h3>Add Private Tool</h3>
+
+<input id="privToolName" placeholder="Tool name">
+<input id="privToolLink" placeholder="Tool link">
+
+<select id="privToolCat"></select>
+
+<label>
+<input type="checkbox" id="privToolFav">
+Favorite
+</label>
+
+<br>
+<button onclick="addPrivateTool()">Add Tool</button>
+
 <script>
 
-const ADMIN_PASSWORD="admin123"
-
+const PASSWORD="admin123"
 let admin=false
 
 let publicCategories=JSON.parse(localStorage.getItem("publicCategories"))||[]
-let privateCategories=JSON.parse(localStorage.getItem("privateCategories"))||[]
-
 let publicTools=JSON.parse(localStorage.getItem("publicTools"))||[]
+
+let privateCategories=JSON.parse(localStorage.getItem("privateCategories"))||[]
 let privateTools=JSON.parse(localStorage.getItem("privateTools"))||[]
 
-function toggleAdmin(){
-
-let pass=prompt("Enter admin password")
-
-if(pass===ADMIN_PASSWORD){
-
-admin=!admin
-
-document.getElementById("toolForm").classList.toggle("hidden")
-
-document.getElementById("publicCategoryCreator").classList.toggle("hidden")
-
-alert("Admin mode "+(admin?"enabled":"disabled"))
-
-render()
-
-}
-
-}
-
 function save(){
-
 localStorage.setItem("publicCategories",JSON.stringify(publicCategories))
-localStorage.setItem("privateCategories",JSON.stringify(privateCategories))
 localStorage.setItem("publicTools",JSON.stringify(publicTools))
+localStorage.setItem("privateCategories",JSON.stringify(privateCategories))
 localStorage.setItem("privateTools",JSON.stringify(privateTools))
+}
 
+function adminLogin(){
+let p=prompt("Admin password")
+if(p===PASSWORD){
+admin=!admin
+document.querySelectorAll(".adminOnly").forEach(e=>e.style.display=admin?"block":"none")
+render()
+}
 }
 
 function addPublicCategory(){
-
-let name=document.getElementById("publicCatName").value.trim()
-let desc=document.getElementById("publicCatDesc").value.trim()
-
-if(!name)return
-
-publicCategories.push({name,desc})
-
+let n=pubCatName.value.trim()
+let d=pubCatDesc.value.trim()
+if(!n)return
+publicCategories.push({name:n,desc:d})
 save()
 render()
-
 }
 
 function addPrivateCategory(){
-
-let name=document.getElementById("privateCatName").value.trim()
-
-if(!name)return
-
-privateCategories.push({name})
-
+let n=privCatName.value.trim()
+if(!n)return
+privateCategories.push({name:n})
 save()
 render()
-
 }
 
-function deleteCategory(type,index){
-
-if(!confirm("Delete this category and all tools inside?"))return
-
-if(type==="public"){
-
-let name=publicCategories[index].name
-
-publicTools=publicTools.filter(t=>t.cat!==name)
-
-publicCategories.splice(index,1)
-
-}else{
-
-let name=privateCategories[index].name
-
-privateTools=privateTools.filter(t=>t.cat!==name)
-
-privateCategories.splice(index,1)
-
-}
-
-save()
-render()
-
-}
-
-function addTool(){
-
-let name=document.getElementById("toolName").value.trim()
-let link=document.getElementById("toolLink").value.trim()
-let cat=document.getElementById("toolCategory").value
-let fav=document.getElementById("toolFav").checked
-let type=document.getElementById("toolType").value
-
+function addPublicTool(){
+let name=pubToolName.value.trim()
+let link=pubToolLink.value.trim()
+let cat=pubToolCat.value
+let fav=pubToolFav.checked
 if(!name||!link)return
-
 if(!link.startsWith("http"))link="https://"+link
-
-let tool={name,link,cat,fav}
-
-if(type==="public")publicTools.push(tool)
-else privateTools.push(tool)
-
+publicTools.push({name,link,cat,fav})
 save()
 render()
-
 }
 
-function deleteTool(type,index){
-
-if(type==="public")publicTools.splice(index,1)
-else privateTools.splice(index,1)
-
+function addPrivateTool(){
+let name=privToolName.value.trim()
+let link=privToolLink.value.trim()
+let cat=privToolCat.value
+let fav=privToolFav.checked
+if(!name||!link)return
+if(!link.startsWith("http"))link="https://"+link
+privateTools.push({name,link,cat,fav})
 save()
 render()
+}
 
+function deleteCategory(type,i){
+if(!confirm("Delete category and tools?"))return
+if(type==="public"){
+let name=publicCategories[i].name
+publicCategories.splice(i,1)
+publicTools=publicTools.filter(t=>t.cat!==name)
+}else{
+let name=privateCategories[i].name
+privateCategories.splice(i,1)
+privateTools=privateTools.filter(t=>t.cat!==name)
+}
+save()
+render()
+}
+
+function deleteTool(type,i){
+if(type==="public")publicTools.splice(i,1)
+else privateTools.splice(i,1)
+save()
+render()
 }
 
 function render(){
 
-document.getElementById("publicCategoriesContainer").innerHTML=""
-document.getElementById("privateCategoriesContainer").innerHTML=""
-document.getElementById("publicFavorites").innerHTML=""
-document.getElementById("privateFavorites").innerHTML=""
+publicCats.innerHTML=""
+privateCats.innerHTML=""
+publicFav.innerHTML=""
+privateFav.innerHTML=""
 
-let select=document.getElementById("toolCategory")
-select.innerHTML=""
+pubToolCat.innerHTML=""
+privToolCat.innerHTML=""
 
 publicCategories.forEach((c,i)=>{
 
-let section=document.createElement("div")
-section.className="section"
+let div=document.createElement("div")
+div.className="section"
 
-section.innerHTML=`
+div.innerHTML=`
 <div class="categoryHeader">
 <h2>${c.name}</h2>
-<span class="info" onclick="alert('${c.desc}')">ⓘ</span>
+<span class="info">ⓘ
+<div class="tooltip">${c.desc}</div>
+</span>
 ${admin?`<button onclick="deleteCategory('public',${i})">Delete</button>`:""}
 </div>
-<div class="grid" id="pub-${i}"></div>
+<div class="grid" id="pub${i}"></div>
 `
 
-document.getElementById("publicCategoriesContainer").appendChild(section)
+publicCats.appendChild(div)
 
-let opt=document.createElement("option")
-opt.value=c.name
-opt.textContent="[Public] "+c.name
-select.appendChild(opt)
+let o=document.createElement("option")
+o.value=c.name
+o.textContent=c.name
+pubToolCat.appendChild(o)
 
 })
 
 privateCategories.forEach((c,i)=>{
 
-let section=document.createElement("div")
-section.className="section"
+let div=document.createElement("div")
+div.className="section"
 
-section.innerHTML=`
+div.innerHTML=`
 <div class="categoryHeader">
 <h2>${c.name}</h2>
-${admin?`<button onclick="deleteCategory('private',${i})">Delete</button>`:""}
+<button onclick="deleteCategory('private',${i})">Delete</button>
 </div>
-<div class="grid" id="pri-${i}"></div>
+<div class="grid" id="pri${i}"></div>
 `
 
-document.getElementById("privateCategoriesContainer").appendChild(section)
+privateCats.appendChild(div)
 
-let opt=document.createElement("option")
-opt.value=c.name
-opt.textContent="[Private] "+c.name
-select.appendChild(opt)
+let o=document.createElement("option")
+o.value=c.name
+o.textContent=c.name
+privToolCat.appendChild(o)
 
 })
 
@@ -393,21 +346,15 @@ ${admin?`<button class="delete" onclick="deleteTool('public',${i})">×</button>`
 </a>
 `
 
-let catIndex=publicCategories.findIndex(c=>c.name===t.cat)
+let ci=publicCategories.findIndex(c=>c.name===t.cat)
 
-if(catIndex>-1){
-
+if(ci>-1){
 if(t.fav){
-
-document.getElementById("publicFavorites").appendChild(card.cloneNode(true))
-document.getElementById("pub-"+catIndex).prepend(card)
-
+publicFav.appendChild(card.cloneNode(true))
+document.getElementById("pub"+ci).prepend(card)
 }else{
-
-document.getElementById("pub-"+catIndex).appendChild(card)
-
+document.getElementById("pub"+ci).appendChild(card)
 }
-
 }
 
 })
@@ -421,81 +368,65 @@ card.className="card"
 
 card.innerHTML=`
 <div class="favorite">${t.fav?"⭐":""}</div>
-${admin?`<button class="delete" onclick="deleteTool('private',${i})">×</button>`:""}
+<button class="delete" onclick="deleteTool('private',${i})">×</button>
 <a href="${t.link}" target="_blank">
 <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
 <div>${t.name}</div>
 </a>
 `
 
-let catIndex=privateCategories.findIndex(c=>c.name===t.cat)
+let ci=privateCategories.findIndex(c=>c.name===t.cat)
 
-if(catIndex>-1){
-
+if(ci>-1){
 if(t.fav){
-
-document.getElementById("privateFavorites").appendChild(card.cloneNode(true))
-document.getElementById("pri-"+catIndex).prepend(card)
-
+privateFav.appendChild(card.cloneNode(true))
+document.getElementById("pri"+ci).prepend(card)
 }else{
-
-document.getElementById("pri-"+catIndex).appendChild(card)
-
+document.getElementById("pri"+ci).appendChild(card)
 }
-
 }
 
 })
 
 }
 
-document.getElementById("searchInput").addEventListener("input",function(){
-
-let s=this.value.toLowerCase()
-
-document.querySelectorAll(".card").forEach(card=>{
-
-card.style.display=card.innerText.toLowerCase().includes(s)?"block":"none"
-
+search.addEventListener("input",e=>{
+let s=e.target.value.toLowerCase()
+document.querySelectorAll(".card").forEach(c=>{
+c.style.display=c.innerText.toLowerCase().includes(s)?"block":"none"
+})
 })
 
-})
-
-function exportTools(){
+function exportData(){
 
 let data={
 publicCategories,
-privateCategories,
 publicTools,
+privateCategories,
 privateTools
 }
 
 let blob=new Blob([JSON.stringify(data)],{type:"application/json"})
-
 let a=document.createElement("a")
-
 a.href=URL.createObjectURL(blob)
-
 a.download="toolbox.json"
-
 a.click()
 
 }
 
-function importTools(e){
+function importData(e){
 
 let file=e.target.files[0]
-
 let reader=new FileReader()
 
 reader.onload=function(){
 
-let data=JSON.parse(reader.result)
+let d=JSON.parse(reader.result)
 
-publicCategories=data.publicCategories||[]
-privateCategories=data.privateCategories||[]
-publicTools=data.publicTools||[]
-privateTools=data.privateTools||[]
+publicCategories=d.publicCategories||[]
+publicTools=d.publicTools||[]
+privateCategories=d.privateCategories||[]
+privateTools=d.privateTools||[]
 
 save()
 render()
