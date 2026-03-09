@@ -2,330 +2,310 @@
 <html>
 <head>
 <title>Creative Toolbox</title>
-
 <style>
-
 body{
-background:#111;
-color:white;
-font-family:Arial;
-padding:40px;
+  background:#111;
+  color:white;
+  font-family:Arial;
+  padding:40px;
 }
 
-h1{
-font-size:38px;
-margin-bottom:10px;
+h1{ font-size:38px; margin-bottom:10px; }
+h2{ margin-top:40px; }
+
+input,select,button{
+  padding:8px;
+  border-radius:4px;
+  border:none;
+  margin-bottom:8px;
 }
 
-h2{
-margin-top:40px;
-}
+button{ cursor:pointer; }
 
-.search{
-width:100%;
-padding:12px;
-font-size:16px;
-margin-bottom:25px;
-border:none;
-border-radius:6px;
-}
+.search{ width:100%; padding:12px; font-size:16px; margin-bottom:25px; border:none; border-radius:6px; }
 
 .grid{
-display:flex;
-flex-wrap:wrap;
-gap:20px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
 }
 
 .card{
-width:160px;
-background:#1c1c1c;
-border-radius:10px;
-padding:12px;
-text-align:center;
-position:relative;
+  width:160px;
+  background:#1c1c1c;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  position:relative;
 }
 
 .card img{
-width:48px;
-height:48px;
-border-radius:8px;
-margin-bottom:8px;
-}
-
-.card small{
-color:#aaa;
-font-size:12px;
+  width:48px;
+  height:48px;
+  border-radius:8px;
+  margin-bottom:8px;
 }
 
 .delete{
-position:absolute;
-top:6px;
-right:6px;
-background:red;
-border:none;
-color:white;
-border-radius:50%;
-width:20px;
-height:20px;
-cursor:pointer;
+  position:absolute;
+  top:6px;
+  right:6px;
+  background:red;
+  border:none;
+  color:white;
+  border-radius:50%;
+  width:20px;
+  height:20px;
+  cursor:pointer;
 }
 
 .favorite{
-position:absolute;
-top:6px;
-left:6px;
-font-size:14px;
+  position:absolute;
+  top:6px;
+  left:6px;
+  font-size:14px;
 }
 
-a{
-text-decoration:none;
-color:white;
-}
+a{ text-decoration:none; color:white; }
 
-input,select,textarea{
-width:260px;
-padding:8px;
-border-radius:4px;
-border:none;
-margin-bottom:8px;
-}
-
-textarea{
-height:60px;
-}
-
-button{
-padding:8px 12px;
-border:none;
-border-radius:4px;
-cursor:pointer;
-}
-
-#formBox{
-margin-top:15px;
-display:none;
-}
-
-.section{
-margin-top:35px;
-}
-
+.section{ margin-top:35px; padding-bottom:20px; border-bottom:1px solid #333; cursor: grab; }
 </style>
 </head>
-
 <body>
 
 <h1>Creative Toolbox</h1>
 
 <input class="search" id="searchInput" placeholder="Search tools...">
 
+<!-- Add Category -->
+<p>Create Category:</p>
+<input id="newCategory">
+<button onclick="addCategory()">Add Category</button>
+
+<!-- Add Tool -->
 <button onclick="toggleForm()">+ Add Tool</button>
 <button onclick="exportTools()">Export</button>
 <input type="file" onchange="importTools(event)">
 
-<div id="formBox">
-
+<div id="formBox" style="display:none; margin-top:15px;">
 <p>Name</p>
 <input id="toolName">
 
-<p>URL</p>
-<input id="toolURL">
-
-<p>Description</p>
-<textarea id="toolDesc"></textarea>
-
 <p>Category</p>
-<select id="toolCategory">
-<option>AI</option>
-<option>Video</option>
-<option>Audio</option>
-<option>Design</option>
-<option>Productivity</option>
-<option>Other</option>
-</select>
+<select id="toolCategory"></select>
 
 <p>
-<label>
-<input type="checkbox" id="toolFav">
-Favorite
-</label>
+<label><input type="checkbox" id="toolFav"> Favorite</label>
 </p>
 
 <button onclick="addTool()">Add</button>
-
 </div>
 
+<!-- Favorites Section -->
 <div class="section">
 <h2>⭐ Favorites</h2>
 <div class="grid" id="favorites"></div>
 </div>
 
-<div class="section">
-<h2>AI Tools</h2>
-<div class="grid" id="AI"></div>
-</div>
-
-<div class="section">
-<h2>Video Tools</h2>
-<div class="grid" id="Video"></div>
-</div>
-
-<div class="section">
-<h2>Audio Tools</h2>
-<div class="grid" id="Audio"></div>
-</div>
-
-<div class="section">
-<h2>Design Tools</h2>
-<div class="grid" id="Design"></div>
-</div>
-
-<div class="section">
-<h2>Productivity</h2>
-<div class="grid" id="Productivity"></div>
-</div>
-
-<div class="section">
-<h2>Other</h2>
-<div class="grid" id="Other"></div>
-</div>
+<!-- Categories will be appended here dynamically -->
+<div id="categoriesContainer"></div>
 
 <script>
+let categories = [];
+let tools = JSON.parse(localStorage.getItem("tools")) || [];
 
-let tools = JSON.parse(localStorage.getItem("tools")) || []
-
+// Toggle Add Tool form
 function toggleForm(){
-let f=document.getElementById("formBox")
-f.style.display = f.style.display==="none" ? "block" : "none"
+  let f = document.getElementById("formBox");
+  f.style.display = f.style.display==="none" ? "block" : "none";
 }
 
+// Add new category
+function addCategory(){
+  let cat = document.getElementById("newCategory").value.trim();
+  if(!cat || categories.includes(cat)) return;
+  categories.push(cat);
+
+  // Add to dropdown
+  let sel = document.getElementById("toolCategory");
+  let opt = document.createElement("option");
+  opt.value = cat; opt.textContent = cat;
+  sel.appendChild(opt);
+
+  // Create a section
+  let container = document.getElementById("categoriesContainer");
+  let section = document.createElement("div");
+  section.className = "section";
+  section.id = "section-" + cat;
+  section.innerHTML = `
+    <h2>${cat} <button onclick="deleteCategory('${cat}')">🗑️ Delete Category</button></h2>
+    <div class="grid" id="${cat}"></div>
+  `;
+  container.appendChild(section);
+
+  document.getElementById("newCategory").value = "";
+  enableDrag(); // enable drag after adding new section
+}
+
+// Delete category with confirmation
+function deleteCategory(cat){
+  if(!confirm(`Are you sure you want to delete category "${cat}" and all its tools?`)) return;
+
+  // Remove tools in that category
+  tools = tools.filter(t=>t.cat!==cat);
+  localStorage.setItem("tools", JSON.stringify(tools));
+
+  // Remove section from DOM
+  let section = document.getElementById("section-"+cat);
+  section.remove();
+
+  // Remove from dropdown and categories array
+  categories = categories.filter(c=>c!==cat);
+  let sel = document.getElementById("toolCategory");
+  for(let i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===cat){ sel.remove(i); break; }
+  }
+
+  render();
+}
+
+// Add Tool
 function addTool(){
+  let name=document.getElementById("toolName").value.trim();
+  let url=document.getElementById("toolURL")?.value?.trim() || '';
+  let cat=document.getElementById("toolCategory").value;
+  let fav=document.getElementById("toolFav").checked;
+  if(!name || !cat) return;
 
-let name=document.getElementById("toolName").value.trim()
-let url=document.getElementById("toolURL").value.trim()
-let desc=document.getElementById("toolDesc").value.trim()
-let cat=document.getElementById("toolCategory").value
-let fav=document.getElementById("toolFav").checked
+  if(url && !url.startsWith("http")) url="https://"+url;
 
-if(!name||!url) return
-
-if(!url.startsWith("http")){
-url="https://"+url
+  tools.push({name, url, cat, fav});
+  localStorage.setItem("tools", JSON.stringify(tools));
+  clearForm();
+  render();
 }
 
-tools.push({name,url,desc,cat,fav})
-
-localStorage.setItem("tools",JSON.stringify(tools))
-
-clearForm()
-render()
-
-}
-
+// Clear add tool form
 function clearForm(){
-document.getElementById("toolName").value=""
-document.getElementById("toolURL").value=""
-document.getElementById("toolDesc").value=""
-document.getElementById("toolFav").checked=false
+  document.getElementById("toolName").value="";
+  if(document.getElementById("toolURL")) document.getElementById("toolURL").value="";
+  document.getElementById("toolFav").checked=false;
 }
 
+// Delete a tool
 function deleteTool(i){
-tools.splice(i,1)
-localStorage.setItem("tools",JSON.stringify(tools))
-render()
+  tools.splice(i,1);
+  localStorage.setItem("tools",JSON.stringify(tools));
+  render();
 }
 
+// Render all tools
 function render(){
+  document.querySelectorAll(".grid").forEach(g=>g.innerHTML="");
+  let favSection = document.getElementById("favorites");
+  favSection.innerHTML="";
 
-document.querySelectorAll(".grid").forEach(g=>g.innerHTML="")
+  tools.forEach((t,i)=>{
+    let domain;
+    try{ domain=new URL(t.url).hostname; } catch{ domain=t.url; }
 
-tools.forEach((t,i)=>{
+    let card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <div class="favorite">${t.fav?"⭐":""}</div>
+      <button class="delete" onclick="deleteTool(${i})">×</button>
+      <a href="${t.url}" target="_blank">
+        <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
+        <div>${t.name}</div>
+      </a>
+    `;
 
-let domain
-try{domain=new URL(t.url).hostname}catch{domain=t.url}
-
-let card=document.createElement("div")
-card.className="card"
-
-card.innerHTML=`
-<div class="favorite">${t.fav?"⭐":""}</div>
-
-<button class="delete" onclick="deleteTool(${i})">×</button>
-
-<a href="${t.url}" target="_blank">
-
-<img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
-
-<div>${t.name}</div>
-
-<small>${t.desc}</small>
-
-</a>
-`
-
-document.getElementById(t.cat).appendChild(card)
-
-if(t.fav){
-document.getElementById("favorites").appendChild(card.cloneNode(true))
+    // Append in category
+    let container = document.getElementById(t.cat);
+    if(!container) return;
+    if(t.fav){
+      container.prepend(card.cloneNode(true));
+      favSection.appendChild(card.cloneNode(true));
+    } else {
+      container.appendChild(card);
+    }
+  });
 }
 
-})
+// Search tools
+document.getElementById("searchInput").addEventListener("input", function(){
+  let s = this.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(card=>{
+    let text = card.innerText.toLowerCase();
+    card.style.display = text.includes(s) ? "block" : "none";
+  });
+});
 
-}
-
-document.getElementById("searchInput").addEventListener("input",function(){
-
-let s=this.value.toLowerCase()
-
-document.querySelectorAll(".card").forEach(card=>{
-
-let text=card.innerText.toLowerCase()
-
-card.style.display = text.includes(s) ? "block" : "none"
-
-})
-
-})
-
+// Export tools
 function exportTools(){
-
-let data=JSON.stringify(tools)
-
-let blob=new Blob([data],{type:"application/json"})
-
-let a=document.createElement("a")
-
-a.href=URL.createObjectURL(blob)
-
-a.download="toolbox.json"
-
-a.click()
-
+  let data=JSON.stringify({tools,categories});
+  let blob=new Blob([data],{type:"application/json"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="toolbox.json";
+  a.click();
 }
 
+// Import tools
 function importTools(e){
+  let file=e.target.files[0];
+  let reader=new FileReader();
+  reader.onload=function(){
+    let data = JSON.parse(reader.result);
+    tools = data.tools || [];
+    categories = data.categories || [];
 
-let file=e.target.files[0]
+    // Clear existing category dropdown and sections
+    document.getElementById("toolCategory").innerHTML="";
+    document.getElementById("categoriesContainer").innerHTML="";
+    categories.forEach(cat=>{
+      let sel = document.getElementById("toolCategory");
+      let opt = document.createElement("option");
+      opt.value=cat; opt.textContent=cat;
+      sel.appendChild(opt);
 
-let reader=new FileReader()
+      let section = document.createElement("div");
+      section.className="section";
+      section.id = "section-" + cat;
+      section.innerHTML = `<h2>${cat} <button onclick="deleteCategory('${cat}')">🗑️ Delete Category</button></h2><div class="grid" id="${cat}"></div>`;
+      document.getElementById("categoriesContainer").appendChild(section);
+    });
 
-reader.onload=function(){
-
-tools=JSON.parse(reader.result)
-
-localStorage.setItem("tools",JSON.stringify(tools))
-
-render()
-
+    localStorage.setItem("tools", JSON.stringify(tools));
+    render();
+    enableDrag();
+  }
+  reader.readAsText(file);
 }
 
-reader.readAsText(file)
+// Drag-and-drop reorder (categories)
+function enableDrag(){
+  const sections = document.querySelectorAll('#categoriesContainer .section');
+  sections.forEach(section => {
+    section.draggable = true;
+    section.ondragstart = e => { e.dataTransfer.setData("text/plain", section.id); };
+  });
 
+  const container = document.getElementById('categoriesContainer');
+  container.ondragover = e => e.preventDefault();
+  container.ondrop = e => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    const dragged = document.getElementById(id);
+    const after = Array.from(container.children).find(c=> c!==dragged && c.getBoundingClientRect().top>e.clientY);
+    container.insertBefore(dragged, after || null);
+  };
 }
 
-render()
+// Initialize
+render();
+enableDrag();
 
 </script>
-
 </body>
 </html>
