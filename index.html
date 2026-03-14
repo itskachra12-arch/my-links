@@ -1,472 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Creative Toolbox</title>
-
-<style>
-
-body{
-background:#0b0b0b;
-color:#e8e8e8;
-font-family:Arial;
-padding:40px;
-}
-
-h1{font-size:34px;margin-bottom:20px}
-h2{margin-top:40px}
-
-.search{
-width:100%;
-padding:12px;
-margin-bottom:30px;
-background:#1a1a1a;
-border:none;
-color:white;
-border-radius:6px;
-}
-
-button,input,select{
-background:#1a1a1a;
-color:white;
-border:none;
-padding:8px;
-border-radius:5px;
-margin:5px 0;
-}
-
-.grid{
-display:flex;
-flex-wrap:wrap;
-gap:18px;
-}
-
-.card{
-width:160px;
-background:#161616;
-padding:12px;
-border-radius:10px;
-text-align:center;
-position:relative;
-}
-
-.card img{
-width:46px;
-height:46px;
-margin-bottom:8px;
-}
-
-.favorite{
-position:absolute;
-left:6px;
-top:6px;
-}
-
-.delete{
-position:absolute;
-right:6px;
-top:6px;
-background:#ff3d3d;
-border-radius:50%;
-width:20px;
-height:20px;
-font-size:12px;
-color:white;
-}
-
-.section{margin-top:35px}
-
-.categoryHeader{
-display:flex;
-align-items:center;
-gap:8px;
-}
-
-.info{
-cursor:pointer;
-font-size:14px;
-color:#aaa;
-position:relative;
-}
-
-.tooltip{
-display:none;
-position:absolute;
-background:#222;
-padding:8px;
-border-radius:6px;
-width:180px;
-top:20px;
-left:0;
-font-size:12px;
-}
-
-.info:hover .tooltip{
-display:block;
-}
-
-a{
-color:white;
-text-decoration:none;
-}
-
-.adminOnly{display:none}
-
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creative Toolbox</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
-<body>
-
-<h1>Creative Toolbox</h1>
-
-<input id="search" class="search" placeholder="Search tools...">
-
-<button onclick="adminLogin()">Admin Mode</button>
-<button onclick="exportData()">Export</button>
-<input type="file" onchange="importData(event)">
-
-<div class="section">
-<h2>⭐ Public Favorites</h2>
-<div class="grid" id="publicFav"></div>
-</div>
-
-<div id="publicCats"></div>
-
-<div class="adminOnly">
-
-<h3>Create Public Category</h3>
-
-<input id="pubCatName" placeholder="Category name">
-<input id="pubCatDesc" placeholder="Category description">
-<button onclick="addPublicCategory()">Create</button>
-
-<h3>Add Public Tool</h3>
-
-<input id="pubToolName" placeholder="Tool name">
-<input id="pubToolLink" placeholder="Tool link">
-
-<select id="pubToolCat"></select>
-
-<label>
-<input type="checkbox" id="pubToolFav">
-Favorite
-</label>
-
-<br>
-<button onclick="addPublicTool()">Add Tool</button>
-
-</div>
-
-<div class="section">
-<h2>⭐ Private Favorites</h2>
-<div class="grid" id="privateFav"></div>
-</div>
-
-<div id="privateCats"></div>
-
-<h3>Create Private Category</h3>
-
-<input id="privCatName" placeholder="Category name">
-<button onclick="addPrivateCategory()">Create</button>
-
-<h3>Add Private Tool</h3>
-
-<input id="privToolName" placeholder="Tool name">
-<input id="privToolLink" placeholder="Tool link">
-
-<select id="privToolCat"></select>
-
-<label>
-<input type="checkbox" id="privToolFav">
-Favorite
-</label>
-
-<br>
-<button onclick="addPrivateTool()">Add Tool</button>
-
-<script>
-
-const PASSWORD="admin123"
-let admin=false
-
-let publicCategories=JSON.parse(localStorage.getItem("publicCategories"))||[]
-let publicTools=JSON.parse(localStorage.getItem("publicTools"))||[]
-
-let privateCategories=JSON.parse(localStorage.getItem("privateCategories"))||[]
-let privateTools=JSON.parse(localStorage.getItem("privateTools"))||[]
-
-function save(){
-localStorage.setItem("publicCategories",JSON.stringify(publicCategories))
-localStorage.setItem("publicTools",JSON.stringify(publicTools))
-localStorage.setItem("privateCategories",JSON.stringify(privateCategories))
-localStorage.setItem("privateTools",JSON.stringify(privateTools))
-}
-
-function adminLogin(){
-let p=prompt("Admin password")
-if(p===PASSWORD){
-admin=!admin
-document.querySelectorAll(".adminOnly").forEach(e=>e.style.display=admin?"block":"none")
-render()
-}
-}
-
-function addPublicCategory(){
-let n=pubCatName.value.trim()
-let d=pubCatDesc.value.trim()
-if(!n)return
-publicCategories.push({name:n,desc:d})
-save()
-render()
-}
-
-function addPrivateCategory(){
-let n=privCatName.value.trim()
-if(!n)return
-privateCategories.push({name:n})
-save()
-render()
-}
-
-function addPublicTool(){
-let name=pubToolName.value.trim()
-let link=pubToolLink.value.trim()
-let cat=pubToolCat.value
-let fav=pubToolFav.checked
-if(!name||!link)return
-if(!link.startsWith("http"))link="https://"+link
-publicTools.push({name,link,cat,fav})
-save()
-render()
-}
-
-function addPrivateTool(){
-let name=privToolName.value.trim()
-let link=privToolLink.value.trim()
-let cat=privToolCat.value
-let fav=privToolFav.checked
-if(!name||!link)return
-if(!link.startsWith("http"))link="https://"+link
-privateTools.push({name,link,cat,fav})
-save()
-render()
-}
-
-function deleteCategory(type,i){
-if(!confirm("Delete category and tools?"))return
-if(type==="public"){
-let name=publicCategories[i].name
-publicCategories.splice(i,1)
-publicTools=publicTools.filter(t=>t.cat!==name)
-}else{
-let name=privateCategories[i].name
-privateCategories.splice(i,1)
-privateTools=privateTools.filter(t=>t.cat!==name)
-}
-save()
-render()
-}
-
-function deleteTool(type,i){
-if(type==="public")publicTools.splice(i,1)
-else privateTools.splice(i,1)
-save()
-render()
-}
-
-function render(){
-
-publicCats.innerHTML=""
-privateCats.innerHTML=""
-publicFav.innerHTML=""
-privateFav.innerHTML=""
-
-pubToolCat.innerHTML=""
-privToolCat.innerHTML=""
-
-publicCategories.forEach((c,i)=>{
-
-let div=document.createElement("div")
-div.className="section"
-
-div.innerHTML=`
-<div class="categoryHeader">
-<h2>${c.name}</h2>
-<span class="info">ⓘ
-<div class="tooltip">${c.desc}</div>
-</span>
-${admin?`<button onclick="deleteCategory('public',${i})">Delete</button>`:""}
-</div>
-<div class="grid" id="pub${i}"></div>
-`
-
-publicCats.appendChild(div)
-
-let o=document.createElement("option")
-o.value=c.name
-o.textContent=c.name
-pubToolCat.appendChild(o)
-
-})
-
-privateCategories.forEach((c,i)=>{
-
-let div=document.createElement("div")
-div.className="section"
-
-div.innerHTML=`
-<div class="categoryHeader">
-<h2>${c.name}</h2>
-<button onclick="deleteCategory('private',${i})">Delete</button>
-</div>
-<div class="grid" id="pri${i}"></div>
-`
-
-privateCats.appendChild(div)
-
-let o=document.createElement("option")
-o.value=c.name
-o.textContent=c.name
-privToolCat.appendChild(o)
-
-})
-
-publicTools.forEach((t,i)=>{
-
-let domain=new URL(t.link).hostname
-
-let card=document.createElement("div")
-card.className="card"
-
-card.innerHTML=`
-<div class="favorite">${t.fav?"⭐":""}</div>
-${admin?`<button class="delete" onclick="deleteTool('public',${i})">×</button>`:""}
-<a href="${t.link}" target="_blank">
-<img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
-<div>${t.name}</div>
-</a>
-`
-
-let ci=publicCategories.findIndex(c=>c.name===t.cat)
-
-if(ci>-1){
-if(t.fav){
-publicFav.appendChild(card.cloneNode(true))
-document.getElementById("pub"+ci).prepend(card)
-}else{
-document.getElementById("pub"+ci).appendChild(card)
-}
-}
-
-})
-
-privateTools.forEach((t,i)=>{
-
-let domain=new URL(t.link).hostname
-
-let card=document.createElement("div")
-card.className="card"
-
-card.innerHTML=`
-<div class="favorite">${t.fav?"⭐":""}</div>
-<button class="delete" onclick="deleteTool('private',${i})">×</button>
-<a href="${t.link}" target="_blank">
-<img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}">
-<div>${t.name}</div>
-</a>
-`
-
-let ci=privateCategories.findIndex(c=>c.name===t.cat)
-
-if(ci>-1){
-if(t.fav){
-privateFav.appendChild(card.cloneNode(true))
-document.getElementById("pri"+ci).prepend(card)
-}else{
-document.getElementById("pri"+ci).appendChild(card)
-}
-}
-
-})
-
-}
-
-search.addEventListener("input",e=>{
-let s=e.target.value.toLowerCase()
-document.querySelectorAll(".card").forEach(c=>{
-c.style.display=c.innerText.toLowerCase().includes(s)?"block":"none"
-})
-})
-
-function exportData(){
-
-let data={
-publicCategories,
-publicTools,
-privateCategories,
-privateTools
-}
-
-let blob=new Blob([JSON.stringify(data)],{type:"application/json"})
-let a=document.createElement("a")
-a.href=URL.createObjectURL(blob)
-a.download="toolbox.json"
-a.click()
-
-}
-
-function importData(e){
-
-let file=e.target.files[0]
-let reader=new FileReader()
-
-reader.onload=function(){
-
-let d=JSON.parse(reader.result)
-
-publicCategories=d.publicCategories||[]
-publicTools=d.publicTools||[]
-privateCategories=d.privateCategories||[]
-privateTools=d.privateTools||[]
-
-save()
-render()
-
-}
-
-reader.readAsText(file)
-
-}
-
-render()
-
-</script>
-<script>
-const searchBar = document.getElementById("search");
-
-searchBar.addEventListener("input", function () {
-
-let text = this.value.toLowerCase();
-let tools = document.querySelectorAll(".tool-card");
-
-tools.forEach(tool => {
-
-let name = tool.dataset.name.toLowerCase();
-let category = tool.dataset.category.toLowerCase();
-let desc = tool.dataset.description.toLowerCase();
-
-if (
-name.includes(text) ||
-category.includes(text) ||
-desc.includes(text)
-) {
-tool.style.display = "block";
-} else {
-tool.style.display = "none";
-}
-
-});
-
-});
-</script>
+<body data-page="home">
+  <header class="navbar">
+    <div class="nav-inner container">
+      <a href="index.html" class="logo">Creative Toolbox 🛠️</a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link active">🌍 Explore</a>
+        <a href="library.html" class="nav-link">📚 My Library</a>
+        <button id="adminToggleBtn" class="nav-admin-btn">🔒 Admin</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-content">
+    <section class="hero">
+      <div class="hero-badge">Public directory</div>
+      <h1>Discover the best tools &amp; resources on the internet</h1>
+      <p>Curated collection of free and useful websites, AI tools, and more</p>
+
+      <div class="search-wrap">
+        <input
+          id="publicSearch"
+          class="search-input"
+          type="text"
+          placeholder="Search tools or categories... (Press /)"
+          autocomplete="off"
+        />
+      </div>
+
+      <div id="publicStats" class="stats-line"></div>
+    </section>
+
+    <section id="adminPanelSection" class="panel admin-panel hidden">
+      <div class="panel-header">
+        <div>
+          <h2>Admin Panel</h2>
+          <p class="panel-note">Manage the public curated directory</p>
+        </div>
+        <span class="admin-badge">Admin Mode Active</span>
+      </div>
+
+      <div class="admin-grid">
+        <div class="subpanel">
+          <h3>Create Category</h3>
+          <div class="form-grid">
+            <input id="publicCategoryName" type="text" class="input" placeholder="Category name" />
+            <input id="publicCategoryDesc" type="text" class="input" placeholder="Category description" />
+            <button id="createPublicCategoryBtn" class="btn btn-primary">Create Category</button>
+          </div>
+        </div>
+
+        <div class="subpanel">
+          <h3>Add Tool</h3>
+          <div class="form-grid">
+            <input id="publicToolName" type="text" class="input" placeholder="Tool name" />
+            <input id="publicToolUrl" type="url" class="input" placeholder="https://example.com" />
+            <select id="publicToolCategory" class="input select"></select>
+            <label class="check-row">
+              <input id="publicToolFav" type="checkbox" />
+              <span>Featured / Favorite</span>
+            </label>
+            <button id="addPublicToolBtn" class="btn btn-primary">Add Tool</button>
+          </div>
+        </div>
+
+        <div class="subpanel">
+          <h3>Backup & Restore</h3>
+          <div class="inline-actions wrap">
+            <button id="exportAllBtn" class="btn">💾 Export All Data</button>
+            <button id="importAllBtn" class="btn">📂 Import All Data</button>
+            <input id="importAllInput" type="file" accept=".json,application/json" hidden />
+          </div>
+          <p class="muted">Exports public + private data together as a full backup.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="publicFavoritesSection" class="section hidden">
+      <div class="section-head">
+        <h2>⭐ Featured Tools</h2>
+      </div>
+      <div id="publicFavoritesGrid" class="card-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Explore Categories</h2>
+      </div>
+
+      <div id="publicNoResults" class="empty-state hidden"></div>
+      <div id="publicCategoriesContainer"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>Made with ❤️ | Creative Toolbox</p>
+      <a href="library.html">Want your own private library? → Go to My Library</a>
+    </div>
+  </footer>
+
+  <button id="scrollTopBtn" class="scroll-top-btn" aria-label="Scroll to top">↑</button>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+      <h3 id="confirmTitle">Confirm</h3>
+      <p id="confirmText">Are you sure?</p>
+      <div class="modal-actions">
+        <button id="confirmCancel" class="btn">Cancel</button>
+        <button id="confirmDelete" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="adminModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-admin-modal></div>
+    <div class="modal-card">
+      <h3>Admin Access</h3>
+      <p>Enter your admin password to manage the public directory.</p>
+      <div class="form-grid">
+        <input id="adminPasswordInput" type="password" class="input" placeholder="Admin password" />
+        <div class="modal-actions left">
+          <button id="adminCancelBtn" class="btn">Cancel</button>
+          <button id="adminLoginBtn" class="btn btn-primary">Enter Admin Mode</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Tool Modal -->
+  <div id="editToolModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-edit-modal></div>
+    <div class="modal-card">
+      <h3>Edit Tool</h3>
+      <p>Update the tool details below.</p>
+      <div class="form-grid">
+        <input id="editToolName" type="text" class="input" placeholder="Tool name" />
+        <input id="editToolUrl" type="url" class="input" placeholder="https://example.com" />
+        <select id="editToolCategory" class="input select"></select>
+        <label class="check-row">
+          <input id="editToolFav" type="checkbox" />
+          <span>Featured / Favorite</span>
+        </label>
+        <div class="modal-actions left">
+          <button id="editCancelBtn" class="btn">Cancel</button>
+          <button id="editSaveBtn" class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
